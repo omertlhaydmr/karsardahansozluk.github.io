@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kars - Ardahan Ağzı Sözlüğü</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background-attachment: fixed;
+            color: #e2e8f0;
+        }
+
+        .alphabet-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .alphabet-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.4);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+        
+        .alphabet-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .alphabet-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transform: scale(1.1);
+        }
+
+        .word-card {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+        
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        #search-input {
+            transition: all 0.3s ease;
+        }
+        
+        #search-input:focus {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        header {
+            animation: fadeInDown 0.6s ease;
+        }
+
+        #letter-image-container img {
+            transition: all 0.4s ease;
+        }
+        
+        #letter-image-container img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="container mx-auto max-w-2xl p-4">
+        
+        <div class="mb-4">
+            <img src="img/bannertop.png" alt="Sözlük Banner" class="w-full h-auto rounded-lg shadow-md"
+                 onerror="this.style.display='none'; this.onerror=null;">
+        </div>
+
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-3 bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
+                Kars - Ardahan Ağzı Sözlüğü
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 font-light"> </p>
+        </header>
+
+        <div class="mb-6 relative">
+            <input 
+                type="text" 
+                id="search-input"
+                placeholder="🔍 Kelime ara..."
+                class="w-full px-6 py-4 bg-gray-800/60 backdrop-blur-sm text-white border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-lg"
+            >
+            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <nav class="mb-6">
+            <div id="alphabet-nav" class="flex flex-wrap gap-2 justify-center">
+            </div>
+        </nav>
+
+        <main id="content-area">
+            <div id="letter-image-container" class="mb-4">
+            </div>
+            
+            <div id="word-list" class="space-y-4">
+            </div>
+
+            <div id="no-results" class="hidden text-center text-gray-400 py-10">
+                <p class="text-xl">Aradığınız kelime bulunamadı.</p>
+            </div>
+        </main>
+
+        <footer class="text-center text-gray-500 mt-12 mb-6">
+            <p>&copy;Ekim 2025 Ömer Talha Aydemir . Tüm hakları saklıdır.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const sozluk = {
+            'A': [
+                { kelime: "Ağhır", anlam: "İnsan hayatının sonu.", ornek: "Her insanın bir ağhırı vardır." },
+                { kelime: "Alaf", anlam: "Hayvan için hazırlanan ot, saman gibi yiyecekler.", ornek: "Ahırdaki ineklere alaflarını verdi." },
+                { kelime: "Alma", anlam: "Elma.", ornek: "Bahçeden bir alma kopardı." },
+                { kelime: "Andır", anlam: "Uğursuz.", ornek: "Bu andır kedi yine yoluma çıktı." }
+            ],
+            'B': [
+                { kelime: "Bağtafar", anlam: "Şans, şanslı olan kişi.", ornek: "Ne bağtafar adamsın, hep kazanırsın." },
+                { kelime: "Bala", anlam: "Evlat, çocuk.", ornek: "Balam bu gün okula başladı." },
+                { kelime: "Balaca", anlam: "Küçük.", ornek: "O balaca boyuyla her işin üstesinden gelir." },
+                { kelime: "Bed", anlam: "Kötü durumda olan, çirkin.", ornek: "Yüzü çok bed görünüyordu, sanırım hasta." },
+                { kelime: "Bibi", anlam: "Babanın kız kardeşi, hala.", ornek: "Bibim bugün bize yemeğe geldi." }
+            ],
+            'C': [
+                { kelime: "Cancur", anlam: "Erik.", ornek: "Ağaçtan cancur toplayıp yedik." },
+                { kelime: "Cırbağa", anlam: "Yaramaz erkek çocuk.", ornek: "Mahallenin cırbağaları yine top oynuyor." },
+                { kelime: "Curcur", anlam: "Hindi.", ornek: "Yılbaşı için bir curcur aldık." },
+                { kelime: "Cücük", anlam: "Yumurtadan çıkan kanatlı yavru hayvanlar.", ornek: "Tavuğun cücükleri annelerinin peşinden ayrılmıyor." }
+            ],
+            'Ç': [
+                { kelime: "Çaynik", anlam: "Çaydanlık.", ornek: "Çaynikte su kaynadı, çay demleyelim." },
+                { kelime: "Çeper", anlam: "Taştan örülmüş duvar.", ornek: "Bahçenin etrafını çeperle çevirdiler." },
+                { kelime: "Çıngır", anlam: "Kova.", ornek: "Çeşmeden bir çıngır su getirdi." },
+                { kelime: "Çimmek", anlam: "Banyo yapmak.", ornek: "Hava çok sıcak, gölde çimmek istiyor." },
+                { kelime: "Çingirik", anlam: "Kova ile omuzda su taşımaya yarayan alet.", ornek: "Anam çingirikle pınardan su taşırdı." },
+                { kelime: "Çor", anlam: "Sinirli zamanda söylenen söz.", ornek: "Ona çok sinirlenmiştim çor diyerek karşılık verdim." }
+            ],
+            'D': [
+                { kelime: "Damçı", anlam: "Damla.", ornek: "Tavandan damçı damlıyor." },
+                { kelime: "Demiroy", anlam: "Vücutta çıkan bir çeşit yara.", ornek: "Kolunda bir demiroy çıkmış, kaşıyıp duruyor." },
+                { kelime: "Dolça", anlam: "Maşrapa.", ornek: "Hamamda dolça ile su dökündü." },
+                { kelime: "Doydoy", anlam: "Güvercin.", ornek: "Pencerenin önüne doydoylar kondu." },
+                { kelime: "Düngür", anlam: "Dünür.", ornek: "Yarın düngürler bize yemeğe gelecek." }
+            ],
+            'E': [
+                { kelime: "Eringen", anlam: "Tembel.", ornek: "O kadar eringen ki yerinden kalkmıyor." },
+                { kelime: "Eşgere", anlam: "Herkesin gözü önünde, hiç gizlemeden açıktan açığa yapılan.", ornek: "Yaptığı hatayı eşgere herkesin içinde söyledi." }
+            ],
+            'F': [
+                { kelime: "Fağır", anlam: "Fakir.", ornek: "Halil Emmi çok fağır bir adamdır, kimseye zararı dokunmaz." },
+                { kelime: "Ferik", anlam: "Henüz yumurtlamamış tavuk.", ornek: "Ferik bu sabah ilk yumurtasını yumurtladı." },
+                { kelime: "Fizzah", anlam: "Bağırmak.", ornek: "Olanları duyunca bir fizzah kopardı." }
+            ],
+            'G': [
+                { kelime: "Ganfet", anlam: "Bayram ve akide şekeri.", ornek: "Bayramda çocuklara ganfet dağıttı." },
+                { kelime: "Gırcik", anlam: "Kıvırcık saç.", ornek: "Oğlanın saçları ne güzel gırcik gırcik." },
+                { kelime: "Goppuz", anlam: "Yumruk.", ornek: "Sinirlenip masaya bir goppuz vurdu." },
+                { kelime: "Gor", anlam: "Mezar.", ornek: "Dedemi gora defnettik." },
+                { kelime: "Gudik", anlam: "Yavru köpek.", ornek: "Kapının önünde bir gudik bulduk, çok sevimlidir." },
+                { kelime: "Guşkana", anlam: "Tencere.", ornek: "Yemek guşkanada pişiyor." },
+                { kelime: "Guzik", anlam: "Kambur.", ornek: "Yaşlılıktan beli guzik çıkmıştı." }
+            ],
+            'H': [
+                { kelime: "Hal", anlam: "Vücutta çıkan siyah ben.", ornek: "Yanağında bir hal var." },
+                { kelime: "Hasillamak", anlam: "Yoğurmak.", ornek: "Annem ekmek için hamur hasilliyor." },
+                { kelime: "Hayhavar", anlam: "Ortalığı yaygaraya vermek.", ornek: "Çocuklar düşünce bir hayhavar koptu." },
+                { kelime: "Hedik", anlam: "Haşlanmış buğday.", ornek: "Yemek için hedik hazırladık." },
+                { kelime: "Herslenmek", anlam: "Sinirlenmek.", ornek: "Söylediklerime çok herslendi." },
+                { kelime: "Hottik", anlam: "Eşek yavrusu.", ornek: "Hottik anasının peşinde koşuyordu." }
+            ],
+            'I': [
+                { kelime: "Işıma", anlam: "Gündüz", ornek: "Işıma vakti yola çıktık." }
+            ],
+            'İ': [
+                { kelime: "İrbet", anlam: "Rezil olmak.", ornek: "Herkesin içinde öyle konuşunca irbet oldum." },
+                { kelime: "İstol", anlam: "Sandalye.", ornek: "İstola oturup soluklandı." },
+                { kelime: "İşmar", anlam: "İşaret etmek.", ornek: "Gözüyle gel diye işmar etti." }
+            ],
+            'J': [
+                { kelime: "Jujun", anlam: "Vücutta oluşan tatlı kaşıntı.", ornek: "Sırtımda bir jujun var, kaşınıp duruyor." }
+            ],
+            'K': [
+                { kelime: "Kartof", anlam: "Patates.", ornek: "Akşama kartof kızartması yapacağım." },
+                { kelime: "Köçmek", anlam: "Evlenmek.", ornek: "Komşunun kızı yarın köçüyor." },
+                { kelime: "Köynek", anlam: "Gömlek.", ornek: "Yeni köyneklerini giyip bayrama gitti." },
+                { kelime: "Külçeken", anlam: "Faraş.", ornek: "Külçekenle sobanın külünü temizledi." },
+                { kelime: "Künde", anlam: "Hamur bezesi.", ornek: "Fırıncı kündeleri bir bir tezgaha dizdi." }
+            ],
+            'L': [
+                { kelime: "Lazut", anlam: "Mısır.", ornek: "Tarladan taze lazut kopardık." },
+                { kelime: "Leçek", anlam: "Beyaz renkli başörtüsü.", ornek: "Nenem leçeğini başına bağladı." },
+                { kelime: "Lenger", anlam: "Geniş ve derin leğen.", ornek: "Bulaşıkları lengerin içinde yıkadı." },
+                { kelime: "Lobye", anlam: "Fasulye.", ornek: "Yazdan kuruttuğumuz lobyeyi pişirdik." }
+            ],
+            'M': [
+                { kelime: "Mafiş", anlam: "Küçük kareler şeklinde kesilmiş yağda kızartılan hamur.", ornek: "Kahvaltıya sıcak mafiş ne güzel gider." },
+                { kelime: "Mintan", anlam: "Gömlek.", ornek: "Eski mintanını giyip bahçeye indi." },
+                { kelime: "Mökkem", anlam: "Güçlü, sağlam.", ornek: "Kapıyı mökkem kapat, rüzgar açmasın." },
+                { kelime: "Muruslanmak", anlam: "Suratını asmak.", ornek: "İstediğini alamayınca başladı muruslanmaya." }
+            ],
+            'N': [
+                { kelime: "Nahır", anlam: "İnek sürüsü", ornek: "Çoban nahırı otlatmaya götürdü." },
+                { kelime: "Nöker", anlam: "Hizmetçi.", ornek: "Eski konaklarda çok nöker çalışırmış." }
+            ],
+            'O': [
+                { kelime: "Ola", anlam: "Arkadaş.", ornek: "Ola, gel de biraz sohbet edelim." }
+            ],
+            'Ö': [
+                { kelime: "Öy", anlam: "Ev.", ornek: "Akşam olunca herkes öyüne çekildi." },
+                { kelime: "Özüm", anlam: "Ben, kendim.", ornek: "Bu işi özüm halletmek istiyorum." }
+            ],
+            'P': [
+                { kelime: "Paltar", anlam: "Elbise.", ornek: "Bayram için yeni paltarlar aldık." },
+                { kelime: "Papak", anlam: "Şapka.", ornek: "Dedem kışın papağını başından çıkarmaz." },
+                { kelime: "Pejkir", anlam: "Havlu.", ornek: "Elini yüzünü yıkayıp pejkire kurulandı." },
+                { kelime: "Peşkun", anlam: "Yer sofrası.", ornek: "Peşkunu serip yemeği ortaya koydu." },
+                { kelime: "Pişik", anlam: "Kedi.", ornek: "Pişik sobanın yanında uyukluyor." }
+            ],
+            'R': [
+                 { kelime: "Repete", anlam: "Tandırda ekmek pişirmeye yarayan tahta üzerine gerdirilmiş kumaştan yapılmış alet.", ornek: "Repeteyi tandıa vurdular." }
+            ],
+            'S': [
+                { kelime: "Sımışka", anlam: "Çekirlen.", ornek: "Parkta oturup sımışka çitlediler." },
+                { kelime: "Sitil", anlam: "Yoğurt kabı.", ornek: "Sitilden bir tas yoğurt aldım." }
+            ],
+            'Ş': [
+                { kelime: "Şırat", anlam: "Peynir suyu.", ornek: "Taze peynirden akan şıratı süzdüler." },
+            ],
+            'T': [
+                { kelime: "Talaş", anlam: "Telaş.", ornek: "Beni bir talaş aldı, ne yapacağımı bilemedim." },
+                { kelime: "Tar", anlam: "Tavukların kümeste üstüne çıktığı yer.", ornek: "Tavuklar tarlarına tünemiş." },
+                { kelime: "Tayteker", anlam: "El arabası.", ornek: "Bahçedeki otları taytekerle taşıdı." },
+                { kelime: "Terek", anlam: "Raf.", ornek: "Baharatları tereğe dizdi." },
+                { kelime: "Tike", anlam: "Parça.", ornek: "Bir tike ekmek ver de karnımı doyurayım." }
+            ],
+            'U': [
+                { kelime: "Uca", anlam: "Yüce.", ornek: "O, çok uca bir insandır." },
+                { kelime: "Umaç", anlam: "Hamurdan yapılan hayvan yemi.", ornek: "Tavuklara yem olarak umaç hazırladı." }
+            ],
+            'Ü': [
+                { kelime: "Ürek", anlam: "Yürek.", ornek: "Bu haberi duyunca üreğim hopladı." }
+            ],
+            'V': [
+                { kelime: "Veran", anlam: "Harabe.", ornek: "Eski ev depremden sonra veran olmuş." }
+            ],
+            'Y': [
+                { kelime: "Yal", anlam: "Köpek yiyeceği.", ornek: "Köpeğin yalını tasına koydu." },
+                { kelime: "Yeğin", anlam: "Çalışkan, üşenmeyen.", ornek: "Ali çok yeğin adamdır, hiçbir işten kaçmaz." },
+                { kelime: "Yeke", anlam: "Büyük.", ornek: "Ne yeke bir karpuz bu böyle!" },
+                { kelime: "Yüngül", anlam: "Hafif.", ornek: "Bu çuval çok yüngül, rahat taşırım." }
+            ],
+            'Z': [
+                { kelime: "Zağar", anlam: "Küçük köpek.", ornek: "Zağar avda tavşanı hemen buldu." },
+                { kelime: "Zeherman", anlam: "Hastalık.", ornek: "Bu zeherman hastalık bir türlü geçmedi." },
+                { kelime: "Zırza", anlam: "Kilit.", ornek: "Kapıdaki zırzayı takıp evden çıktı." },
+                { kelime: "Zibil", anlam: "Çöp.", ornek: "Zibilleri toplayıp dışarı attı." }
+            ]
+        };
+
+        const alphabetNav = document.getElementById('alphabet-nav');
+        const letterImageContainer = document.getElementById('letter-image-container');
+        const wordList = document.getElementById('word-list');
+        const searchInput = document.getElementById('search-input');
+        const noResultsDiv = document.getElementById('no-results');
+
+        let lastActiveLetter = 'A';
+
+        function createWordCard(word) {
+            return `
+                <div class="word-card p-5 rounded-lg shadow-md">
+                    <h3 class="kelime text-xl font-bold text-blue-300">${word.kelime}</h3>
+                    <p class="anlam text-gray-300 mt-1">${word.anlam}</p>
+                    <p class="ornek italic text-gray-400 mt-2">"${word.ornek}"</p>
+                </div>
+            `;
+        }
+
+        function turkishToLower(str) {
+            const map = {
+                'İ': 'i',
+                'I': 'ı',
+                'Ş': 'ş',
+                'Ğ': 'ğ',
+                'Ü': 'ü',
+                'Ö': 'ö',
+                'Ç': 'ç'
+            };
+            return str.split('').map(char => map[char] || char.toLowerCase()).join('');
+        }
+
+        function displayWords(letter) {
+            searchInput.value = '';
+            noResultsDiv.classList.add('hidden');
+            wordList.innerHTML = '';
+            letterImageContainer.innerHTML = '';
+            
+            document.querySelectorAll('.alphabet-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.letter === letter) {
+                    btn.classList.add('active');
+                }
+            });
+
+            const letterImg = document.createElement('img');
+            const lowerLetter = turkishToLower(letter);
+            const imgUrl = `img/${lowerLetter}.png`;
+            const fallbackUrl = `https://placehold.co/600x300/222A3A/FFFFFF?text=${letter}`;
+            
+            letterImg.src = imgUrl;
+            letterImg.alt = `${letter} Harfi Görseli`;
+            letterImg.className = "w-full h-56 object-contain rounded-lg shadow-lg bg-gray-800";
+            letterImg.onerror = () => {
+                letterImg.src = fallbackUrl;
+                letterImg.alt = `${letter} Harfi (Görsel bulunamadı)`;
+            };
+            letterImageContainer.appendChild(letterImg);
+
+            const words = sozluk[letter];
+            if (words && words.length > 0) {
+                words.forEach(word => {
+                    wordList.innerHTML += createWordCard(word);
+                });
+            } else {
+                wordList.innerHTML = `<p class="text-gray-400 text-center">Bu harf için kelime bulunamadı.</p>`;
+            }
+            
+            lastActiveLetter = letter;
+        }
+
+        function createAlphabetNav() {
+            const letters = Object.keys(sozluk);
+            letters.forEach(letter => {
+                const button = document.createElement('button');
+                button.textContent = letter;
+                button.dataset.letter = letter;
+                button.className = "alphabet-btn w-12 h-12 rounded-xl bg-gray-700/60 backdrop-blur-sm text-gray-200 font-semibold transition-all duration-300 hover:bg-gray-600 hover:shadow-lg text-lg";
+                
+                button.addEventListener('click', () => {
+                    displayWords(letter);
+                });
+                alphabetNav.appendChild(button);
+            });
+        }
+
+        function filterWords() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            if (searchTerm === '') {
+                displayWords(lastActiveLetter);
+                return;
+            }
+
+            letterImageContainer.innerHTML = '';
+            document.querySelectorAll('.alphabet-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            wordList.innerHTML = '';
+            let resultsFound = false;
+
+            for (const letter in sozluk) {
+                sozluk[letter].forEach(word => {
+                    if (word.kelime.toLowerCase().includes(searchTerm)) {
+                        wordList.innerHTML += createWordCard(word);
+                        resultsFound = true;
+                    }
+                });
+            }
+
+            if (!resultsFound) {
+                noResultsDiv.classList.remove('hidden');
+            } else {
+                noResultsDiv.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createAlphabetNav();
+            displayWords(lastActiveLetter);
+            searchInput.addEventListener('keyup', filterWords);
+        });
+    </script>
+
+</body>
+</html>
